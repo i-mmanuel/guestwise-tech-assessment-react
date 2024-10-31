@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Container, Spinner } from "react-bootstrap";
+import { Card, Container, Spinner, Alert } from "react-bootstrap";
 import { getRestaurantDetails } from "../services/api";
 import { RestaurantDetailData } from "./RestaurantList";
 
@@ -10,6 +10,7 @@ type RestaurantDetailsProps = {
 const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ restaurantId }) => {
 	const [details, setDetails] = useState<RestaurantDetailData>();
 	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<string | null>(null);
 
 	const fetchRestaurantDetails = async (restaurantId: number) => {
 		try {
@@ -17,11 +18,13 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ restaurantId }) =
 
 			if (returnedRestaurantDetails) {
 				setDetails(returnedRestaurantDetails.details);
+				setError(null);
 			} else {
-				console.log("Error: Restaurant details not found.");
+				setError("Error: Restaurant details not found.");
 			}
 		} catch (error) {
 			console.error("Error fetching restaurant details:", error);
+			setError("An error occurred while fetching the restaurant details. Please try again later.");
 		} finally {
 			setLoading(false);
 		}
@@ -37,6 +40,14 @@ const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ restaurantId }) =
 				<Spinner animation="border" role="status">
 					<span className="visually-hidden">Loading...</span>
 				</Spinner>
+			</Container>
+		);
+	}
+
+	if (error) {
+		return (
+			<Container>
+				<Alert variant="danger">{error}</Alert>
 			</Container>
 		);
 	}
