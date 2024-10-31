@@ -9,7 +9,8 @@ type defaultFormProps = {
 	time: string;
 	guests: number;
 };
-const detaultForm: defaultFormProps = {
+
+const defaultForm: defaultFormProps = {
 	name: "",
 	email: "",
 	phone: "",
@@ -19,15 +20,14 @@ const detaultForm: defaultFormProps = {
 };
 
 const BookTable: React.FC = () => {
-	const [formData, setFormData] = useState<defaultFormProps>(detaultForm);
-
+	const [formData, setFormData] = useState<defaultFormProps>(defaultForm);
 	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 	const [infoMessage, setInfoMessage] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 	const validateForm = () => {
 		const newErrors: { [key: string]: string } = {};
-		let infoMsg = null; // Temporary variable for info messages
+		let infoMsg = null;
 
 		// Required field checks
 		if (!formData.name) newErrors.name = "Name is required";
@@ -65,6 +65,7 @@ const BookTable: React.FC = () => {
 
 		setErrors(newErrors);
 		setInfoMessage(infoMsg);
+		setSuccessMessage("");
 		return Object.keys(newErrors).length === 0;
 	};
 
@@ -86,16 +87,11 @@ const BookTable: React.FC = () => {
 			setInfoMessage(null); // Clear any previous info messages
 			setErrors({}); // Clear previous errors
 
-			setFormData({
-				name: "",
-				email: "",
-				phone: "",
-				date: new Date().toISOString().slice(0, 10),
-				time: `${new Date().getHours()}:${new Date().getMinutes()}`,
-				guests: 1,
-			});
+			// Reset form data
+			setFormData(defaultForm);
 		} catch (err) {
-			console.log(err);
+			console.error(err);
+			setSuccessMessage(null); // Clear success message on error
 		} finally {
 			console.log("Completed request");
 		}
@@ -168,6 +164,7 @@ const BookTable: React.FC = () => {
 				</Form.Group>
 
 				{infoMessage && <Alert variant="info">{infoMessage}</Alert>}
+				{successMessage && <Alert variant="success">{successMessage}</Alert>}
 
 				<Button className="mt-4" type="submit">
 					Book
