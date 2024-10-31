@@ -1,48 +1,60 @@
 import React, { useEffect, useState } from "react";
-import { Card, Container } from "react-bootstrap";
+import { Card, Container, Spinner } from "react-bootstrap";
 import { getRestaurantDetails } from "../services/api";
+import { RestaurantDetailData } from "./RestaurantList";
 
 type RestaurantDetailsProps = {
-  restaurantId: number;
+	restaurantId: number;
 };
 
-type RestaurantDetailsData = {
-  address: string;
-  openingHours: {
-    weekday: string;
-    weekend: string;
-  };
-  reviewScore: number;
-  contactEmail: string;
-};
+const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({ restaurantId }) => {
+	const [details, setDetails] = useState<RestaurantDetailData>();
+	const [loading, setLoading] = useState<boolean>(true);
 
-const RestaurantDetails: React.FC<RestaurantDetailsProps> = ({
-  restaurantId,
-}) => {
-  if (!restaurantId) return null;
+	const fetchRestaurantDetails = async (restaurantId: number) => {
+		try {
+			const returnedRestaurantDetails = await getRestaurantDetails(restaurantId);
 
-  const details = {
-    address: "123 Fine St, London",
-    openingHours: {
-      weekday: "12:00 PM - 10:00 PM",
-      weekend: "11:00 AM - 11:00 PM",
-    },
-    reviewScore: 4.7,
-    contactEmail: "info@velvetandvine.co.uk",
-  };
+			if (returnedRestaurantDetails) {
+				setDetails(returnedRestaurantDetails.details);
+			} else {
+				console.log("Error: Restaurant details not found.");
+			}
+		} catch (error) {
+			console.error("Error fetching restaurant details:", error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  return (
-    <Container>
-      <Card>
-        <Card.Body>
-          <Card.Title>Restaurant Details</Card.Title>
-          <Card.Text>Address: {details.address}</Card.Text>
-          <Card.Text>Review Score: {details.reviewScore}</Card.Text>
-          <Card.Text>Contact: {details.contactEmail}</Card.Text>
-        </Card.Body>
-      </Card>
-    </Container>
-  );
+	useEffect(() => {
+		fetchRestaurantDetails(restaurantId);
+	}, [restaurantId]);
+
+	if (loading) {
+		return (
+			<Container>
+				<Spinner animation="border" role="status">
+					<span className="visually-hidden">Loading...</span>
+				</Spinner>
+			</Container>
+		);
+	}
+
+	return (
+		<Container>
+			<Card>
+				<Card.Body>
+					<Card.Title>Restaurant Details</Card.Title>
+					<Card.Text>Address: {details?.address ?? "N/A"}</Card.Text>
+					<Card.Text>Review Score: {details?.reviewScore ?? "N/A"}</Card.Text>
+					<Card.Text>Contact: {details?.contactEmail ?? "N/A"}</Card.Text>
+					<Card.Text>Opening Hours (Weekday): {details?.openingHours?.weekday ?? "N/A"}</Card.Text>
+					<Card.Text>Opening Hours (Weekend): {details?.openingHours?.weekend ?? "N/A"}</Card.Text>
+				</Card.Body>
+			</Card>
+		</Container>
+	);
 };
 
 export default RestaurantDetails;
